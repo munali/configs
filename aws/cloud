@@ -1,0 +1,20 @@
+#!/bin/sh
+
+current_logged_in_account=$(tac /usr/local/bin/last_cloud.txt  | head -n 1)
+open 'https://console.aws.amazon.com/console/logout!doLogout'
+sleep 2
+osascript <<EOD
+tell application "Google Chrome"
+    set windowList to every tab of every window whose URL contains "aws.amazon.com"
+    repeat with tabList in windowList
+         set tabList to tabList as any
+         repeat with tabItr in tabList
+            set tabItr to tabItr as any
+            delete tabItr
+        end repeat
+     end repeat
+ end tell
+EOD
+saml2aws console --exec-profile $1 # aws-okta login $1
+echo $1 >> /usr/local/bin/last_cloud.txt
+echo "logged out of $current_logged_in_account and logged into $1"
